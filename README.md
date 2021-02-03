@@ -4,9 +4,9 @@ This is a project forked from https://github.com/onemarcfifty/openvpn-bonding
 Currently the project is at initial state.
 
 Bellow is the original readme by onemarcfifty
-# openvpn-bonding
->
+>  
 
+ ### openvpn-bonding
  The scripts in this repository may be used to bond multiple VPN interfaces together and hence increase (i.e. double, triple, quadruple....) your internet speed.
 
  The way this is achieved is by installing openvpn as a server on a VPS (i.e. a virtual Server which you can rent from any VPS provider) and running a vpn client on your home network environment (i.e. a raspberry pi, in a VM or on an OpenWRT router)
