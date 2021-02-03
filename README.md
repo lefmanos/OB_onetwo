@@ -3,9 +3,9 @@ This is a project forked from https://github.com/onemarcfifty/openvpn-bonding
 
 Currently the project is at initial state.
 
-Bellow is the original readme by onemarcfifty
->  
-
+## Bellow is the original readme by onemarcfifty
+>                                                     
+*
  ### openvpn-bonding
  The scripts in this repository may be used to bond multiple VPN interfaces together and hence increase (i.e. double, triple, quadruple....) your internet speed.
 
@@ -21,3 +21,4 @@ Bellow is the original readme by onemarcfifty
  IP V6 is future work
 
  If you are having issues with these scripts (they don't work as expected etc.) then you may join my discord server and chat life with me - please see [THIS VIDEO](https://youtu.be/VouCBt1NTjw) for details
+*
