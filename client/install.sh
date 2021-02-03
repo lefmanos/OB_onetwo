@@ -19,11 +19,18 @@
 
 . commonConfig
 
-apt -y install openvpn openssl bridge-utils sed
-mkdir -p /etc/openvpn/certs
+# TODO: Add functionality of installing only needed packages
+# 		mayby check for updates?
+# 		better check always for updates
+
+apt update 2>/dev/null && apt -y install openvpn openssl bridge-utils sed
+pacman -Sy 2>/dev/null && pacman -S --noconfirm openvpn openssl bridge-utils sed
+
 
 # copy all necessary files into the openvpn config
 # directory
+
+mkdir -p /etc/openvpn/certs
 
 cp commonConfig   /etc/openvpn
 cp startbridge.sh /etc/openvpn
