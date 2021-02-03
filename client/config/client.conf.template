@@ -23,3 +23,5 @@
     cert /etc/openvpn/client1_cert.pem
     status /var/log/openvpn/status.log
     status-version 1
+
+	# TODO configure for video streaming
