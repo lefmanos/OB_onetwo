@@ -1,7 +1,9 @@
 # OB_onetwo
 This is a project forked from https://github.com/onemarcfifty/openvpn-bonding
 
-Bellow is the original readme
+Currently the project is at initial state.
+
+Bellow is the original readme by onemarcfifty
 # openvpn-bonding
 
 The scripts in this repository may be used to bond multiple VPN interfaces together and hence increase (i.e. double, triple, quadruple....) your internet speed.
