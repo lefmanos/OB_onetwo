@@ -4,21 +4,16 @@
     #ifconfig @ip @mask
     port @port
 
+
     # these are default for all connections
 
-    proto udp
-    #mode server
-    client-to-client
-    ping-timer-rem
-    #persist-key
-    #persist-tun
-    tls-server
-    verb 3
-    status /var/log/openvpn/status.log
-    status-version 1
-    ca /etc/openvpn/certs/vpn-ca.pem
-    cert /etc/openvpn/certs/servercert.pem
-    key /etc/openvpn/certs/serverkey.pem
-    dh /etc/openvpn/certs/dh1024.pem
+    # change: for better performance on slow lines
+    # we switch off encryption here
+
+    cipher none
+
+    secret /etc/openvpn/ta.key
+    proto udp4
+    verb 4
     keepalive 15 60
     mute 50

@@ -4,13 +4,11 @@
 #
 # install.sh - run as root.
 #
-# installs openvpn, openssl and bridge-utils
+# installs openvpn, openssl, bonding
+# drivers and also bridge-utils
 #
-# creates a Certification Authority (CA)
-# and all necessary keys and certs for one server
-# and 4 clients
-#
-# creates 4 server configs with tap bridging
+# creates a secret key
+# creates 4 server configs with tap BONDING
 #
 # #############################################
 
@@ -20,57 +18,19 @@
 
 . commonConfig
 
-apt -y install openvpn openssl bridge-utils sed
-mkdir -p /etc/openvpn/certs
+# first install the necessary software
 
-# copy all necessary files into the openvpn config
-# directory
+apt update 2>/dev/null && apt -y install openvpn openssl bridge-utils sed
+pacman -Sy 2>/dev/null && pacman -S --noconfirm openvpn openssl bridge-utils sed
+
+apt update && apt -y install openvpn openssl bridge-utils sed
+# mkdir -p /etc/openvpn/certs
+mkdir -p /etc/openvpn/server
 
 cp commonConfig   /etc/openvpn
-cp startbridge.sh /etc/openvpn
-cp stopbridge.sh  /etc/openvpn
+cp startbond.sh /etc/openvpn
+cp stopbond.sh  /etc/openvpn
 
-# now generate a CA and keys
-
-touch /etc/openvpn/certs/serial
-touch /etc/openvpn/certs/index.txt
-echo "01" > /etc/openvpn/certs/serial
-
-# generate a key pair for the Certification Authority
-# you will be prompted for the password
-
-openssl genrsa -aes256 -out /etc/openvpn/certs/vpn-cakey.pem 2048
-chmod 0600 /etc/openvpn/certs/vpn-cakey.pem 
-
-# now create CA certificate
-
-openssl req -new -x509 -days 3650 -key /etc/openvpn/certs/vpn-cakey.pem -out /etc/openvpn/certs/vpn-ca.pem -set_serial 1
-
-# generate a key for the server
-
-openssl req -new -newkey rsa:1024 -out /etc/openvpn/certs/servercsr.pem -nodes -keyout /etc/openvpn/certs/serverkey.pem -days 3650
-chmod 0600 /etc/openvpn/certs/serverkey.pem 
-
-# generate and sign a certificate for the server
-
-openssl x509 -req -in /etc/openvpn/certs/servercsr.pem -out /etc/openvpn/certs/servercert.pem -CA /etc/openvpn/certs/vpn-ca.pem -CAkey /etc/openvpn/certs/vpn-cakey.pem -CAserial  /etc/openvpn/certs/serial -days 3650
-
-# create Diffie-Hellmann Parameter
-
-openssl dhparam -out /etc/openvpn/certs/dh1024.pem 1024
-
-# create a Client key for each tunnel
-
-for counter in `seq 1 $numberOfTunnels`;
-do
-    clientName=client1${counter}
-     
-    # first generate a certification request and key
-    openssl req -new -newkey rsa:1024 -out /etc/openvpn/certs/$clientName.csr -nodes -keyout /etc/openvpn/certs/$clientName.pem -days 3650
-
-    # then sign the key 
-    openssl x509 -req -in /etc/openvpn/certs/$clientName.csr -out /etc/openvpn/certs/$clientName.cert.pem -CA /etc/openvpn/certs/vpn-ca.pem -CAkey /etc/openvpn/certs/vpn-cakey.pem -CAserial /etc/openvpn/certs/serial -days 3650
-done
 
 # now create a config file for each server instance 
 
@@ -88,8 +48,8 @@ do
 
     # we dont need ip addresses for the tap interfaces as they are bridged
 
-#    sed -i s/@ip/"${ipTrunk}.${counter}"/g $vpnConfigFile
-#    sed -i s/@mask/$ipMask/g $vpnConfigFile
+    sed -i s/@ip/"${ipTrunk}.${counter}"/g $vpnConfigFile
+    sed -i s/@mask/$ipMask/g $vpnConfigFile
 
     # we replace the @port placeholder with ports 1191, 1192, 1193 and so on
 
@@ -97,8 +57,51 @@ do
 
     # enable the corresponding system unit
 
-    systemctl enable openvpn-server@server${counter}.service
+    # enable the corresponding system unit
+    # (removed for downwards compatibility and also increased compatibility
+    # with systems not using systemd)
+    # actually if someone has used older versions
+    # then we need to check and disable
+
+    #systemctl enable openvpn-server@server${counter}.service    systemctl enable openvpn-server@server${counter}.service
+
+    if (systemctl is-enabled openvpn-server@server${counter}.service); then 
+      systemctl disable openvpn-server@server${counter}.service
+    fi
+
+    # (we will run the openvpn command explicitely with the --daemon option
+    # from now on)
 done
 
+# enable ip4 forwarding with sysctl
+sysctl -w net.ipv4.ip_forward=1
+
+# --- print out the content of sysctl.conf
+sysctl -p
 
 
+# we will not use TLS etc. for this exercise but rather simple
+# secret key authentication
+# we only generate a new key if none is present.
+# if a ta.key exists, we will use the existing one
+
+echo "##############################################"
+
+[ -f /etc/openvpn/ta.key ] && echo "Keyfile exists - unchanged." || \
+(
+  echo "Keyfile does not exist - generating new one"
+  openvpn --genkey --secret /etc/openvpn/ta.key
+)
+
+echo "# #############################################"
+echo "# below is your secret key - you need to copy"
+echo "# this onto your client into the file"
+echo "# /etc/openvpn/ta.key"
+echo "# #############################################"
+echo
+
+cat /etc/openvpn/ta.key
+
+echo
+echo "# #############################################"
+echo "# #############################################"
