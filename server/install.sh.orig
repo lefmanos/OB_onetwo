@@ -4,7 +4,8 @@
 #
 # install.sh - run as root.
 #
-# installs openvpn, openssl and bridge-utils
+# installs openvpn, openssl, bonding
+# drivers and also bridge-utils
 #
 # creates a secret key
 # creates 4 server configs with tap BONDING
@@ -19,16 +20,28 @@
 
 # first install the necessary software
 
-
-apt update 2>/dev/null && apt -y install openvpn openssl bridge-utils sed
-pacman -Sy 2>/dev/null && pacman -S --noconfirm openvpn openssl bridge-utils sed
-
+<<<<<<< HEAD
+apt update && apt -y install openvpn openssl bridge-utils sed
+# mkdir -p /etc/openvpn/certs
 mkdir -p /etc/openvpn/server
 
 cp commonConfig   /etc/openvpn
 cp startbond.sh /etc/openvpn
 cp stopbond.sh  /etc/openvpn
 
+=======
+apt update 2>/dev/null && apt -y install openvpn openssl bridge-utils sed
+pacman -Sy 2>/dev/null && pacman -S --noconfirm openvpn openssl bridge-utils sed
+
+apt update && apt -y install openvpn openssl bridge-utils sed
+# mkdir -p /etc/openvpn/certs
+mkdir -p /etc/openvpn/server
+
+cp commonConfig   /etc/openvpn
+cp startbond.sh /etc/openvpn
+cp stopbond.sh  /etc/openvpn
+
+>>>>>>> dev
 
 # now create a config file for each server instance 
 
@@ -96,10 +109,16 @@ echo "# below is your secret key - you need to copy"
 echo "# this onto your client into the file"
 echo "# /etc/openvpn/ta.key"
 echo "# #############################################"
+<<<<<<< HEAD
+
+cat /etc/openvpn/ta.key
+
+=======
 echo
 
 cat /etc/openvpn/ta.key
 
 echo
+>>>>>>> dev
 echo "# #############################################"
 echo "# #############################################"
